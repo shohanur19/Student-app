@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Student - Student Management System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="card">
+    <h3 class="text-center mb-4">Search Student by Roll Number</h3>
+    <form onsubmit="searchStudent(event)">
+      <div class="mb-3">
+        <input type="text" id="rollInput" class="form-control" placeholder="Enter Roll Number" required>
+      </div>
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary">Search</button>
+      </div>
+    </form>
+
+    <div id="resultBox" class="mt-4" style="display: none;">
+      <h5>Student Details</h5>
+      <p><strong>Name:</strong> <span id="studentName">N/A</span></p>
+      <p><strong>Roll Number:</strong> <span id="studentRollNumber">N/A</span></p>
+      <p><strong>Session:</strong> <span id="studentSession">N/A</span></p>
+      <p><strong>Year:</strong> <span id="studentYear">N/A</span></p>
+    </div>
+  </div>
+
+  <script>
+    async function searchStudent(e) {
+      e.preventDefault();
+      const roll = document.getElementById('rollInput').value.trim();  // Get roll number
+
+      if (roll === '') {
+        alert('Please enter a roll number');
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/students/${roll}`);  // Send GET request to the backend
+        if (res.ok) {
+          const student = await res.json();  // Get student data in JSON format
+          document.getElementById('studentName').textContent = student.full_name;
+          document.getElementById('studentRollNumber').textContent = student.roll_number;
+          document.getElementById('studentSession').textContent = student.session;
+          document.getElementById('studentYear').textContent = student.year;
+          document.getElementById('resultBox').style.display = 'block';  // Display student data
+        } else {
+          alert('Student not found');
+          document.getElementById('resultBox').style.display = 'none';
+        }
+      } catch (err) {
+        alert('Error fetching data');
+        document.getElementById('resultBox').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

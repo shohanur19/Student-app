@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Management Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .hero-section {
+      background: url('https://images.unsplash.com/photo-1571260899304-425eee4c7efc?auto=format&fit=crop&w=1650&q=80') center center/cover no-repeat;
+      height: 100vh;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.7);
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+    }
+    .content {
+      z-index: 2;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .search-bar {
+      max-width: 600px;
+      margin: 0 auto 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn-custom {
+      padding: 12px 20px;
+      border-radius: 50px;
+      font-weight: bold;
+      margin: 5px;
+      width: 180px;
+    }
+    .dropdown-container {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Hero Section (Landing Page) -->
+  <div class="hero-section">
+    <div class="overlay"></div>
+    <div class="content">
+      <h1 class="mb-4">Welcome to the IU-CSE Student Management Portal</h1>
+
+      <!-- Search bar for roll number -->
+      <div class="search-bar">
+        <input type="text" id="rollInput" class="form-control" placeholder="Enter Roll Number" />
+        <button class="btn btn-dark" onclick="searchStudent()">Search</button>
+      </div>
+
+      <!-- Display student data -->
+      <div id="studentResult" style="display: none;">
+        <h3>Student Details</h3>
+        <p><strong>Name:</strong> <span id="studentName"></span></p>
+        <p><strong>Roll Number:</strong> <span id="studentRollNumber"></span></p>
+        <p><strong>Session:</strong> <span id="studentSession"></span></p>
+        <p><strong>Year:</strong> <span id="studentYear"></span></p>
+      </div>
+
+      <!-- Display students by year -->
+      <div id="studentsByYear" style="display: none;">
+        <h3>Students in Selected Year</h3>
+        <ul id="studentList" class="list-group"></ul>
+      </div>
+
+      
+
+      <div class="d-flex flex-wrap justify-content-center mt-4">
+        <a href="register.html" class="btn btn-primary btn-custom">Register</a>
+        <a href="login.html" class="btn btn-success btn-custom">Login</a>
+        <a href="achievers.html" class="btn btn-warning btn-custom">High Achievers</a>
+        <a href="alumni.html" class="btn btn-info btn-custom">Alumni Gallery</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to search student by roll number
+    async function searchStudent() {
+      const roll = document.getElementById('rollInput').value.trim();  // Get the roll number from the input field
+
+      if (roll === '') {
+        alert('Please enter a roll number');
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/students/${roll}`);  // Send GET request to the backend
+        if (res.ok) {
+          const student = await res.json();  // Get student data in JSON format
+          document.getElementById('studentName').textContent = student.full_name;
+          document.getElementById('studentRollNumber').textContent = student.roll_number;
+          document.getElementById('studentSession').textContent = student.session;
+          document.getElementById('studentYear').textContent = student.year;
+          document.getElementById('studentResult').style.display = 'block';  // Display student data
+        } else {
+          alert('Student not found');
+          document.getElementById('studentResult').style.display = 'none';
+        }
+      } catch (err) {
+        alert('Error fetching data');
+        document.getElementById('studentResult').style.display = 'none';
+      }
+    }
+
+    // Function to fetch students by year
+    async function fetchStudentsByYear() {
+      const year = document.getElementById('yearSelect').value;
+      
+      if (year === '') {
+        alert('Please select a year');
+        return;
+      }
+
+      try {
+        const res = await fetch(`http://localhost:5000/api/students/year/${year}`);  // Send GET request to fetch students
+        if (res.ok) {
+          const students = await res.json();  // Get all students of selected year
+          const studentList = document.getElementById('studentList');
+          studentList.innerHTML = '';  // Clear previous list
+
+          // Populate the student list
+          students.forEach(student => {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = `Name: ${student.full_name}, Roll: ${student.roll_number}, Session: ${student.session}, Year: ${student.year}`;
+            studentList.appendChild(listItem);
+          });
+
+          document.getElementById('studentsByYear').style.display = 'block';  // Display students list
+        } else {
+          alert('No students found for this year');
+          document.getElementById('studentsByYear').style.display = 'none';
+        }
+      } catch (err) {
+        alert('Error fetching students for this year');
+        document.getElementById('studentsByYear').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>
